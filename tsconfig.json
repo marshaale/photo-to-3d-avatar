@@ -8,6 +8,8 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "types": ["bun"],
+    "rootDir": "./src",
+    "outDir": "./dist",
 
     "paths": {
       "@/*": ["./src/*"]
@@ -30,5 +32,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
