@@ -1,5 +1,6 @@
 import { AppError } from '@/utils';
 import type { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 
 export function notFoundHandler(
   _req: Request,
@@ -15,6 +16,11 @@ export function errorHandler(
   res: Response,
   _next: NextFunction,
 ) {
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ message: err.message, code: err.code });
+    return;
+  }
+
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ message: err.message, code: err.code });
   } else {

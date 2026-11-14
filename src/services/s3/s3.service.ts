@@ -23,6 +23,7 @@ class S3Service {
     this.bucketName = config.aws.bucketName;
     this.s3Client = new S3Client({
       region: config.aws.region,
+      apiVersion: config.aws.apiVersion,
       credentials: {
         accessKeyId: config.aws.accessKeyId,
         secretAccessKey: config.aws.secretAccessKey,
@@ -30,10 +31,10 @@ class S3Service {
     });
   }
 
-  private generateKey(userId: string, prefix: string, fileExtension: string) {
+  private generateKey(prefix: string, fileExtension: string) {
     const timestamp = Date.now();
     const randomString = crypto.randomBytes(8).toString('hex');
-    return `${prefix}/${userId}/${timestamp}-${randomString}.${fileExtension}`;
+    return `${prefix}/${timestamp}-${randomString}.${fileExtension}`;
   }
 
   private async uploadFile(
@@ -58,12 +59,11 @@ class S3Service {
   }
 
   async uploadOriginalFile(
-    userId: string,
     fileBuffer: Buffer,
     fileExtension: string,
   ): Promise<UploadFileResponse> {
     try {
-      const key = this.generateKey(userId, 'original', fileExtension);
+      const key = this.generateKey('original', fileExtension);
       return await this.uploadFile(fileBuffer, key);
     } catch (error) {
       console.error('Original file upload to AWS S3 failed', error);
@@ -71,12 +71,11 @@ class S3Service {
     }
   }
   async uploadGeneratedFile(
-    userId: string,
     fileBuffer: Buffer,
     fileExtension: string,
   ): Promise<UploadFileResponse> {
     try {
-      const key = this.generateKey(userId, 'generated', fileExtension);
+      const key = this.generateKey('generated', fileExtension);
       return await this.uploadFile(fileBuffer, key);
     } catch (error) {
       console.error('Generated file upload to AWS S3 failed', error);

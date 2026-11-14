@@ -5,7 +5,8 @@ export const config = {
   PORT: process.env.PORT || 3000,
   REPLICATE_API_KEY: process.env.REPLICATE_API_KEY || '',
   aws: {
-    region: process.env.AWS_REGION || 'us-east-1',
+    apiVersion: process.env.AWS_API_VERSION || '2010-12-01',
+    region: process.env.AWS_REGION || 'ap-south-1',
     bucketName: process.env.AWS_S3_BUCKET_NAME || '',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
