@@ -1,0 +1,9 @@
+---
+- name: Provision servers
+  hosts: all
+  become: yes
+  remote_user: ubuntu
+  roles:
+    - common
+    # - security
+    # - runtime
