@@ -34,9 +34,14 @@
     name: nginx
     enabled: yes
     state: started
-    
+
 - name: Enable unattended-upgrades
   systemd:
     name: unattended-upgrades
     enabled: yes
     state: started
+
+- name: Configure timezone to UTC
+  ansible.builtin.command: timedatectl set-timezone UTC
+- name: Configure locale to en_US.UTF-8
+  ansible.builtin.command: update-locale LANG=en_US.UTF-8
