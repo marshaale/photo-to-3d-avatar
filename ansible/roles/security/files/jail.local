@@ -1,0 +1,21 @@
+# /etc/fail2ban/jail.local
+# fail2ban settings. "jail.local" overrides the defaults in jail.conf.
+
+[DEFAULT]
+# Read failed logins from the systemd journal.
+backend = systemd
+
+# First ban: 1 hour. Repeat offenders: longer, up to 1 week.
+bantime = 1h
+bantime.increment = true
+bantime.maxtime = 1w
+
+# Ban an IP after 5 failures within 10 minutes.
+findtime = 10m
+maxretry = 5
+
+# Never ban the server itself.
+ignoreip = 127.0.0.1/8 ::1
+
+[sshd]
+enabled = true

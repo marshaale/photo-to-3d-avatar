@@ -1,0 +1,55 @@
+---
+# tasks file for security
+- name: UFW allow SSH
+  ansible.builtin.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: UFW allow HTTP and HTTPS
+  ansible.builtin.ufw:
+    rule: allow
+    name: "Nginx Full"
+
+- name: Deny default incoming connections
+  ansible.builtin.ufw:
+    rule: deny
+    direction: in
+
+- name: Allow default outgoing connections
+  ansible.builtin.ufw:
+    rule: allow
+    direction: out
+
+- name: Enable UFW
+  ansible.builtin.ufw:
+    state: enabled
+
+- name: Start and enable fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: SSH rules
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/00-hardening.conf
+    src: ../files/00-hardening.conf
+
+- name: Jail rules
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.local
+    src: ../files/jail.local
+
+- name: Karnel config
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-zz-karnel.conf
+    src: ../files/99-zz-karnel.conf
+
+- name: Restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted
+- name: Restart ssh
+  ansible.builtin.systemd:
+    name: sshd
+    state: restarted
