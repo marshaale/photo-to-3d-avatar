@@ -1,0 +1,1 @@
+sudo certbot --nginx -d 3d.domain.com www.3d.domain.com
