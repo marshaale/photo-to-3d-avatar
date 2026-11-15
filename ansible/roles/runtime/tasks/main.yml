@@ -1,0 +1,48 @@
+---
+# tasks file for runtime
+- name: Create deploy user
+  ansible.builtin.user:
+    name: deploy
+    comment: Deployment User
+    shell: /bin/bash
+    create_home: true
+    password_lock: true
+    state: present
+
+- name: Create runner system group
+  ansible.builtin.group:
+    name: runner
+    system: true
+    state: present
+
+- name: Create runner system user
+  ansible.builtin.user:
+    name: runner
+    group: runner
+    system: true
+    create_home: false
+    home: /nonexistent
+    shell: /usr/sbin/nologin
+    state: present
+
+- name: Add deploy user to runner group
+  ansible.builtin.user:
+    name: deploy
+    groups: runner
+    append: true
+    state: present
+
+- name: Install Bun runtime
+  ansible.builtin.shell: |
+    curl -fsSL https://bun.sh/install | bash
+  args:
+    creates: /root/.bun/bin/bun
+
+- name: Install Bun system-wide
+  ansible.builtin.copy:
+    src: /root/.bun/bin/bun
+    dest: /usr/local/bin/bun
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0755'
