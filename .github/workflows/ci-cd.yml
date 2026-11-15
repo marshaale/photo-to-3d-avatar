@@ -49,7 +49,7 @@ jobs:
         run: |
           tar --exclude='.git' --exclude='terraform' --exclude='ansible' --exclude='.github' --exclude='*.log' --exclude='*.tmp' --exclude='nginx' -czf "$RUNNER_TEMP/release.tar.gz" .
           mv "$RUNNER_TEMP/release.tar.gz" release.tar.gz
-          sha256sum release.tar.gz | cut -d ' ' -f 1 > release.sha256
+          sha256sum release.tar.gz > release.sha256
 
       - name: Save release artifacts
         if: github.event_name != 'pull_request'
