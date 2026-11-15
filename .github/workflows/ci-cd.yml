@@ -96,9 +96,11 @@ jobs:
           set -euo pipefail
           command -v ansible-playbook
           sha256sum --check release.sha256
+          playbook="$HOME/ansible/deploy-playbook.yml"
+          test -f "$playbook"
           ansible-playbook \
             --inventory "$RUNNER_TEMP/hosts.ini" \
-            ansible/deploy-playbook.yml \
+            "$playbook" \
             --extra-vars "release_id=$RELEASE_ID" \
             --extra-vars "release_archive=$GITHUB_WORKSPACE/release.tar.gz" \
             --extra-vars "app_env_file=$RUNNER_TEMP/app.env"
