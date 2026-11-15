@@ -49,7 +49,7 @@
 
       EnvironmentFile=-/srv/photo23davatar/env/app.env
       Environment=NODE_ENV=production
-      Environment=PORT=3000
+      Environment=PORT=8080
       Environment=HOST=127.0.0.1
       Environment=HOME=/srv/photo23davatar/shared
 
