@@ -1,0 +1,101 @@
+---
+# tasks file for system-run
+
+- name: Create application directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: /srv/photo23davatar
+      owner: deploy
+      group: deploy
+      mode: "0755"
+
+    - path: /srv/photo23davatar/releases
+      owner: deploy
+      group: runner
+      mode: "2750"
+
+    - path: /srv/photo23davatar/shared
+      owner: runner
+      group: runner
+      mode: "0750"
+
+    - path: /srv/photo23davatar/env
+      owner: deploy
+      group: deploy
+      mode: "0700"
+
+- name: Configure photo23davatar systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/photo23davatar.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Photo23DAvatar Application
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      User=runner
+      Group=runner
+
+      WorkingDirectory=/srv/photo23davatar/current
+
+      EnvironmentFile=-/srv/photo23davatar/env/app.env
+      Environment=NODE_ENV=production
+      Environment=PORT=3000
+      Environment=HOST=127.0.0.1
+      Environment=HOME=/srv/photo23davatar/shared
+
+      ExecStart=/usr/local/bin/bun run src/index.ts
+
+      Restart=on-failure
+      RestartSec=5
+
+      # Security sandbox
+      NoNewPrivileges=true
+      ProtectSystem=strict
+      ReadWritePaths=/srv/photo23davatar/shared
+
+      ProtectHome=true
+      PrivateTmp=true
+      PrivateDevices=true
+      ProtectKernelTunables=true
+      ProtectKernelModules=true
+      ProtectKernelLogs=true
+      ProtectControlGroups=true
+      ProtectClock=true
+      ProtectHostname=true
+      ProtectProc=invisible
+
+      RestrictSUIDSGID=true
+      RestrictNamespaces=true
+      RestrictRealtime=true
+      LockPersonality=true
+      RemoveIPC=true
+
+      CapabilityBoundingSet=
+      SystemCallArchitectures=native
+      SystemCallFilter=@system-service
+      RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+
+      UMask=0007
+
+      # Resource limits
+      MemoryMax=1G
+      TasksMax=256
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable photo23davatar service
+  ansible.builtin.systemd:
+    name: photo23davatar
+    daemon_reload: true
+    enabled: true
