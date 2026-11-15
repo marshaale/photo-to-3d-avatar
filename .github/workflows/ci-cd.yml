@@ -61,3 +61,49 @@ jobs:
             release.sha256
           retention-days: 7
           compression-level: 0
+  deploy:
+    name: Deploy to the servers
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: self-hosted
+    timeout-minutes: 10
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Download the release
+        uses: actions/download-artifact@v8
+        with:
+          name: release
+
+      - name: Prepare deployment secrets
+        env:
+          APP_ENV: ${{ secrets.APP_ENV }}
+          HOSTS_INI: ${{ secrets.HOSTS}}
+        run: |
+          set -euo pipefail
+          test -n "$APP_ENV"
+          test -n "$HOSTS_INI"
+          printf '%s\n' "$APP_ENV" > "$RUNNER_TEMP/app.env"
+          printf '%s\n' "$HOSTS_INI" > "$RUNNER_TEMP/hosts.ini"
+          chmod 600 "$RUNNER_TEMP/app.env" "$RUNNER_TEMP/hosts.ini"
+
+      - name: Deploy release with Ansible
+        env:
+          RELEASE_ID: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          command -v ansible-playbook
+          sha256sum --check release.sha256
+          ansible-playbook \
+            --inventory "$RUNNER_TEMP/hosts.ini" \
+            ansible/deploy-playbook.yml \
+            --extra-vars "release_id=$RELEASE_ID" \
+            --extra-vars "release_archive=$GITHUB_WORKSPACE/release.tar.gz" \
+            --extra-vars "app_env_file=$RUNNER_TEMP/app.env"
+
+      - name: Remove deployment secrets
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/app.env" "$RUNNER_TEMP/hosts.ini"
